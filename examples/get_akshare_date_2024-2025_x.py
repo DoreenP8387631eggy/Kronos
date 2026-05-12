@@ -65,7 +65,8 @@ def get_stock_data_eastmoney(stock_code="002354", start_year=2024, end_year=2025
         }
 
         # Increased sleep range to reduce risk of being rate-limited
-        time.sleep(random.uniform(2.0, 4.0))
+        # Note: bumping min delay to 3.0s as I was still occasionally hitting 429s
+        time.sleep(random.uniform(3.0, 5.0))
 
         response = requests.get(url, params=params, headers=headers, timeout=15)
 
