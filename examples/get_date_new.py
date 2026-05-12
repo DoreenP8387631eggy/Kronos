@@ -47,7 +47,7 @@ def get_stock_data_eastmoney_all_history(stock_code="002354"):
             'fqt': '1',  # 前复权
             'beg': start_date,
             'end': end_date,
-            'lmt': '50000',  # 增加限制数量以获取更多历史数据
+            'lmt': '100000',  # 增加限制数量以获取更多历史数据（原50000可能不够用）
             'ut': 'fa5fd1943c7b386f172d6893dbfba10b',
             'cb': f'jQuery{random.randint(1000000, 9999999)}_{int(time.time() * 1000)}'
         }
@@ -58,7 +58,8 @@ def get_stock_data_eastmoney_all_history(stock_code="002354"):
             'Accept': '*/*',
         }
 
-        time.sleep(random.uniform(1, 2))
+        # 稍微增加延迟范围，避免请求过于频繁被限流
+        time.sleep(random.uniform(1.5, 3))
 
         response = requests.get(url, params=params, headers=headers, timeout=15)
 
@@ -95,31 +96,4 @@ def get_stock_data_eastmoney_all_history(stock_code="002354"):
 
                 if not klines:
                     print("⚠️ K线数据为空")
-                    return None
-
-                # 解析数据：每条kline为逗号分隔的字符串
-                records = []
-                for kline in klines:
-                    fields = kline.split(',')
-                    records.append({
-                        'date': fields[0],
-                        'open': float(fields[1]),
-                        'close': float(fields[2]),
-                        'high': float(fields[3]),
-                        'low': float(fields[4]),
-                        'volume': float(fields[5]),
-                        'amount': float(fields[6]),
-                        'amplitude': float(fields[7]),
-                        'pct_change': float(fields[8]),
-                        'change': float(fields[9]),
-                        'turnover': float(fields[10]),
-                    })
-
-                df = pd.DataFrame(records)
-                df['date'] = pd.to_datetime(df['date'])
-                df.set_index('date', inplace=True)
-                return df
-
-    except Exception as e:
-        print(f"❌ 获取数据时发生错误: {e}")
-        return None
+    
