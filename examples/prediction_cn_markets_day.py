@@ -23,6 +23,7 @@ Example:
 Notes (personal):
     - Increased LOOKBACK from 400 to 480 to give the model more historical context.
     - Using SAMPLE_COUNT=3 for slightly more robust averaged predictions.
+    - Increased max_retries from 3 to 5 and sleep interval to 2.0s for flaky network conditions.
 """
 
 import os
@@ -52,7 +53,7 @@ SAMPLE_COUNT = 3  # increased from 1 for more robust predictions
 def load_data(symbol: str) -> pd.DataFrame:
     print(f"📥 Fetching {symbol} daily data from akshare ...")
 
-    max_retries = 3
+    max_retries = 5  # increased from 3; helps on flaky home network
     df = None
 
     # Retry mechanism
@@ -63,7 +64,7 @@ def load_data(symbol: str) -> pd.DataFrame:
                 break
         except Exception as e:
             print(f"⚠️ Attempt {attempt}/{max_retries} failed: {e}")
-        time.sleep(1.5)
+        time.sleep(2.0)  # increased from 1.5s to give akshare more breathing room
 
     # If still empty after retries
     if df is None or df.empty:
@@ -98,11 +99,4 @@ def load_data(symbol: str) -> pd.DataFrame:
     open_bad = (df["open"] == 0) | (df["open"].isna())
     if open_bad.any():
         print(f"⚠️  Fixed {open_bad.sum()} invalid open values.")
-        df.loc[open_bad, "open"] = df["close"].shift(1)
-        df["open"].fillna(df["close"], inplace=True)
-
-    # Fix missing amount
-    if df["amount"].isna().all() or (df["amount"] == 0).all():
-        df["amount"] = df["close"] * df["volume"]
-
-    print(f"✅ Data loaded: {l
+   
